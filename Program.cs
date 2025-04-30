@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.ReactiveUI;
 using System;
-using TouristClub.Presentation.Views;
+using TouristClub.Presentation;
 
 namespace TouristClub;
 
