@@ -1,6 +1,0 @@
-@TouristClub_HostAddress = http://localhost:5259
-
-GET {{TouristClub_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
