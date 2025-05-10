@@ -1,6 +1,8 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using TouristClub.Models;
 
 namespace TouristClub;
 
@@ -11,6 +13,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         ConfigureServices(builder.Services);
+        ConfigureDatabase(builder);
 
         var app = builder.Build();
 
@@ -42,6 +45,14 @@ public class Program
                 };
         });
         services.AddAuthorization();
+        services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql("Host=localhost;Database=postgres;Username=postgres;Password=123456"));
+    }
+
+    private static void ConfigureDatabase(WebApplicationBuilder builder)
+    {
+        builder.Services.AddDbContext<DbContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
     }
 
     private static void ConfigureMiddleware(WebApplication app)
