@@ -1,0 +1,6 @@
+@TouristClub_HostAddress = http://localhost:5193
+
+GET {{TouristClub_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
