@@ -1,7 +1,11 @@
-namespace TouristClub;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
 using TouristClub.Data;
-using TouristClub.Models;
+
+namespace TouristClub;
 
 public class Program
 {
@@ -9,27 +13,21 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Подключаем PostgreSQL
+        // Конфигурация подключения к PostgreSQL
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+        // Сервисы
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+
         var app = builder.Build();
 
-        // Эндпоинт: получаем всех туристов
-        app.MapGet("/tourists", async (ApplicationDbContext db) =>
-        {
-            var tourists = await db.Tourists.ToListAsync();
-            return Results.Ok(tourists);
-        });
+        app.UseHttpsRedirection();
+        app.UseAuthorization();
+        app.MapControllers();
 
-        app.MapPost("/tourists", async (ApplicationDbContext db, Tourists newTourist) =>
-        {
-            db.Tourists.Add(newTourist);
-            await db.SaveChangesAsync();
-
-            return Results.Created($"/tourists/{newTourist.id}", newTourist);
-        });
-
+        // Запуск приложения
         app.Run();
     }
 }
