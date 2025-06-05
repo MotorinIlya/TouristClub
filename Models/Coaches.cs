@@ -11,6 +11,8 @@ public partial class Coaches
 
     public int? section_id { get; set; }
 
+    public decimal? salary { get; set; }
+
     public virtual ICollection<Groups> Groups { get; set; } = new List<Groups>();
 
     public virtual ICollection<Schedule> Schedule { get; set; } = new List<Schedule>();

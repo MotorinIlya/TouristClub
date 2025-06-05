@@ -15,6 +15,10 @@ public partial class Tourists
 
     public int? rank { get; set; }
 
+    public char? gender { get; set; }
+
+    public DateOnly? year_of_birth { get; set; }
+
     public virtual ICollection<Athletes> Athletes { get; set; } = new List<Athletes>();
 
     public virtual ICollection<Coaches> Coaches { get; set; } = new List<Coaches>();

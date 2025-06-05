@@ -179,7 +179,7 @@ public partial class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.id).HasName("Roles_pkey");
 
-            entity.Property(e => e.id).UseIdentityAlwaysColumn();
+            entity.Property(e => e.id).ValueGeneratedNever();
         });
 
         modelBuilder.Entity<Routes>(entity =>
@@ -223,7 +223,7 @@ public partial class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.id).HasName("StatusTrips_pkey");
 
-            entity.Property(e => e.id).UseIdentityAlwaysColumn();
+            entity.Property(e => e.id).ValueGeneratedNever();
         });
 
         modelBuilder.Entity<TouristToGroup>(entity =>
@@ -246,6 +246,7 @@ public partial class ApplicationDbContext : DbContext
             entity.HasKey(e => e.id).HasName("Tourists_pkey");
 
             entity.Property(e => e.id).UseIdentityAlwaysColumn();
+            entity.Property(e => e.gender).HasMaxLength(1);
 
             entity.HasOne(d => d.type_touristNavigation).WithMany(p => p.Tourists)
                 .HasForeignKey(d => d.type_tourist)
@@ -307,14 +308,14 @@ public partial class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.id).HasName("TypeTourist_pkey");
 
-            entity.Property(e => e.id).UseIdentityAlwaysColumn();
+            entity.Property(e => e.id).ValueGeneratedNever();
         });
 
         modelBuilder.Entity<TypeTrips>(entity =>
         {
             entity.HasKey(e => e.id).HasName("TypeTrips_pkey");
 
-            entity.Property(e => e.id).UseIdentityAlwaysColumn();
+            entity.Property(e => e.id).ValueGeneratedNever();
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -9,5 +9,7 @@ public partial class Athletes
 
     public int? tourist_id { get; set; }
 
+    public decimal? salary { get; set; }
+
     public virtual Tourists? tourist { get; set; }
 }
