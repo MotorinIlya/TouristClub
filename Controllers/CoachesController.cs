@@ -39,15 +39,15 @@ public class CoachesController(ApplicationDbContext context) : ControllerBase
                 var type = await _context.TypeTourist.FindAsync(tourist.type_tourist);
                 if (type is null) return NotFound();
                 return new CoachesDto
-                    {
-                        first_name = tourist.first_name,
-                        second_name = tourist.second_name,
-                        type_tourist = type.type,
-                        rank = tourist.rank,
-                        gender = tourist.gender,
-                        year_of_birth = tourist.year_of_birth,
-                        salary = athlete.salary
-                    };
+                {
+                    first_name = tourist.first_name,
+                    second_name = tourist.second_name,
+                    type_tourist = type.type,
+                    rank = tourist.rank,
+                    gender = tourist.gender,
+                    year_of_birth = tourist.year_of_birth,
+                    salary = athlete.salary
+                };
             }
             else return NotFound();
         }
@@ -130,5 +130,98 @@ public class CoachesController(ApplicationDbContext context) : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    [HttpPost("change")]
+    public async Task<ActionResult<CoachesDto>> CreateCoach(CoachChangeDto dto)
+    {
+        var tourist = await _context.Tourists.FindAsync(dto.tourist_id);
+        if (tourist == null)
+            return NotFound("Такого туриста не существует");
+
+
+        var coach = new Coaches
+        {
+            tourist_id = dto.tourist_id,
+            section_id = dto.section_id,
+            salary = dto.salary
+        };
+        _context.Coaches.Add(coach);
+        await _context.SaveChangesAsync();
+
+
+        var result = new CoachesDto
+        {
+            first_name = tourist.first_name,
+            second_name = tourist.second_name,
+            rank = tourist.rank,
+            gender = tourist.gender,
+            year_of_birth = tourist.year_of_birth,
+            salary = coach.salary
+        };
+
+        return CreatedAtAction(nameof(GetAthlete), new { id = coach.id }, result);
+    }
+    
+    [HttpGet("filter")]
+    public async Task<ActionResult<CoachListDto>> GetCoachesByFilter(
+        int? id_section = null,
+        char? gender = null,
+        int? age = null,
+        decimal? salary_min = null,
+        decimal? salary_max = null,
+        int? type_tourist = null
+    )
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+
+        var query = from c in _context.Coaches
+                    join t in _context.Tourists on c.tourist_id equals t.id
+                    join s in _context.Sections on c.section_id equals s.id
+                    join typet in _context.TypeTourist on t.type_tourist equals typet.id
+                    select new { c, t, s, typet };
+
+        if (id_section.HasValue)
+            query = query.Where(x => x.s.id == id_section.Value);
+
+        if (gender.HasValue)
+            query = query.Where(x => x.t.gender == gender.Value);
+
+        if (age.HasValue)
+        {
+            query = query.Where(x =>
+                x.t.year_of_birth.HasValue
+                && (today.Year - x.t.year_of_birth.Value.Year) == age.Value);
+        }
+
+        if (salary_min.HasValue)
+            query = query.Where(x => x.c.salary >= salary_min.Value);
+        if (salary_max.HasValue)
+            query = query.Where(x => x.c.salary <= salary_max.Value);
+
+        if (type_tourist.HasValue)
+            query = query.Where(x => x.t.type_tourist == type_tourist.Value);
+
+        var coachesList = await query
+            .Select(x => new CoachesDto
+            {
+                id = x.c.id,
+                first_name = x.t.first_name,
+                second_name = x.t.second_name,
+                gender = x.t.gender,
+                year_of_birth = x.t.year_of_birth,
+                salary = x.c.salary,
+                id_section = x.s.id,
+                section_name = x.s.name,
+                type_tourist_int = x.t.type_tourist,
+                type_tourist = x.typet.type
+            })
+            .ToListAsync();
+
+        return new CoachListDto
+        {
+            total = coachesList.Count,
+            coaches = coachesList
+        };
     }
 }

@@ -52,4 +52,5 @@ public class LeaderController(ApplicationDbContext context) : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
+    
 }

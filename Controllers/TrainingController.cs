@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TouristClub.Data;
+using TouristClub.DTO.Coaches;
 using TouristClub.DTO.Training;
 using TouristClub.Models;
 
@@ -97,5 +98,38 @@ public class TrainingController : ControllerBase
         _context.Training.Remove(t);
         await _context.SaveChangesAsync();
         return NoContent();
+    }
+
+    [HttpGet("group-trainings")]
+    public async Task<ActionResult<IEnumerable<CoachShortDto>>> GetCoachesByGroupAndPeriod(
+        int id_group,
+        DateTime date_from,
+        DateTime date_to)
+    {
+        var query = from training in _context.Training
+                    where training.id_group == id_group
+                    && training.time_to_training >= date_from
+                    && training.time_to_training <= date_to
+                    join coach in _context.Coaches on training.id_coach equals coach.id
+                    join tourist in _context.Tourists on coach.tourist_id equals tourist.id
+                    select new
+                    {
+                        coach_id = coach.id,
+                        first_name = tourist.first_name,
+                        second_name = tourist.second_name
+                    };
+
+        var coaches = await query
+            .Distinct()
+            .Select(x => new CoachShortDto
+            {
+                id = x.coach_id,
+                id_coach = x.coach_id,
+                first_name = x.first_name,
+                second_name = x.second_name
+            })
+            .ToListAsync();
+
+        return coaches;
     }
 }

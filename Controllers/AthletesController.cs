@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TouristClub.Data;
 using TouristClub.DTO.Athletes;
+using TouristClub.DTO.Competitions;
 using TouristClub.Models;
 
 namespace TouristClub.Controllers;
@@ -42,15 +43,15 @@ public class AthletesController(
                 var type = await _context.TypeTourist.FindAsync(tourist.type_tourist);
                 if (type is null) return NotFound();
                 return new AthletesDto
-                    {
-                        first_name = tourist.first_name,
-                        second_name = tourist.second_name,
-                        type_tourist = type.type,
-                        rank = tourist.rank,
-                        gender = tourist.gender,
-                        year_of_birth = tourist.year_of_birth,
-                        salary = athlete.salary
-                    };
+                {
+                    first_name = tourist.first_name,
+                    second_name = tourist.second_name,
+                    type_tourist = type.type,
+                    rank = tourist.rank,
+                    gender = tourist.gender,
+                    year_of_birth = tourist.year_of_birth,
+                    salary = athlete.salary
+                };
             }
             else return NotFound();
         }
@@ -134,4 +135,42 @@ public class AthletesController(
 
         return NoContent();
     }
+
+    [HttpGet("by-section")]
+    public async Task<ActionResult<CompetitionListDto>> GetCompetitionsBySection(
+        int? id_section = null
+    )
+    {
+        var athletesQuery = from a in _context.Athletes
+                            join tg in _context.TouristToGroup on a.tourist_id equals tg.id_tourist
+                            join g in _context.Groups on tg.id_group equals g.id
+                            select new { athlete_id = a.id, g.id_section, a.tourist_id };
+
+        if (id_section.HasValue)
+            athletesQuery = athletesQuery.Where(x => x.id_section == id_section.Value);
+
+        var athleteTouristIds = await athletesQuery
+            .Select(x => x.tourist_id)
+            .ToListAsync();
+
+        var competitionsQuery = from ct in _context.CompetitionsToTourists
+                                where athleteTouristIds.Contains(ct.id_tourist)
+                                join c in _context.Competitions on ct.id_competiton equals c.id
+                                select new CompetitionDto
+                                {
+                                    id = c.id,
+                                    description = c.description
+                                };
+
+        var competitionList = await competitionsQuery
+            .Distinct()
+            .ToListAsync();
+
+        return new CompetitionListDto
+        {
+            total = competitionList.Count,
+            competitions = competitionList
+        };
+    }
+
 }

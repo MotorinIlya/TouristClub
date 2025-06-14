@@ -7,7 +7,7 @@ using TouristClub.Models;
 namespace TouristClub.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class RoutesController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
